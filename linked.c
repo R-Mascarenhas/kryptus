@@ -4,6 +4,7 @@
 void analyze(char *input, list_t **start){
     
     char function[10];
+    int neg = 1;
     memset(function, '\0', sizeof(function));
 
     int num = 0;
@@ -15,9 +16,14 @@ void analyze(char *input, list_t **start){
 
     if(input[i] == ' '){
         for(++i; input[i] != '\n'; i++){
+            if(input[i] == '-'){
+                i++;
+                neg = -1;
+            }
             num = num*10 + (input[i] - '0');
         }
     }
+    num *= neg;
 
 	command(function, num, start);
     
@@ -26,34 +32,38 @@ void analyze(char *input, list_t **start){
 void command(char * function, int num, list_t **start){
 	
 	if(strncmp(function,"put", 3) == 0){
-			put(start, num);
-			list(*start);
+			append(start, num);
+			printList(*start);
 
 		} else if(strncmp(function,"get", 3) == 0){
 			int index = num - 1;
-			printf("%d\n",get(*start, index));
+            printList(getElement(*start, index));
 
 		} else if(strncmp(function,"first", 5) == 0){
-			printf("%d\n",first(*start));
+			printList(getElement(*start, 0));
 
 		} else if(strncmp(function,"last", 4) == 0){
-			printf("%d\n",last(*start));
+			printList(getElement(*start, -1));
 
 		} else if(strncmp(function,"list", 4) == 0){
-			list(*start);
+			printList(*start);
 
 		} else if(strncmp(function,"clear", 5) == 0){
 			clear(start);
 
 		} else if(strncmp(function,"remove", 6) == 0){
 			int index = num - 1;
-			removeNum(start, index);
-			list(*start);
-		}
+			removeElement(start, index);
+			printList(*start);
+
+		} else if(strncmp(function,"sort", 4) == 0){
+            sortList(start);
+            printList(*start);
+        }
 }
 
 
-void put(list_t **start, int data){
+void append(list_t **start, int data){
 	
     list_t *newNode = createNode(data);
 	list_t *last = *start;
@@ -71,23 +81,37 @@ void put(list_t **start, int data){
     }
 }
 
-int get(list_t* start, int index){
+list_t *getElement(list_t* start, int index){
 	list_t* current = start; 
       
-    int aux = 0; 
-    while (current != NULL) 
-    { 
-        if (aux == index) 
-            return(current->num); 
-    
-        aux++; 
-        current = current->next; 
+    int aux = 0;
+
+    if(start == NULL){
+        return NULL;
     }
 
-    return -1;
+    if(index == -1){
+
+        while(current->next != NULL)
+		    current = current->next;
+	    
+        return createNode(current->num); 
+
+    } else {
+        while (current != NULL) 
+        { 
+            if (aux == index) 
+                return createNode(current->num); 
+        
+            aux++; 
+            current = current->next; 
+        }
+    }
+
+    return NULL;
 }
 
-void list(list_t *start) 
+void printList(list_t *start) 
 { 
     list_t *node = start;
 
@@ -104,7 +128,7 @@ void list(list_t *start)
     free(node);
 } 
 
-void removeNum(list_t **start, int index) 
+void removeElement(list_t **start, int index) 
 { 
    if (*start == NULL) 
       return; 
@@ -135,21 +159,6 @@ void removeNum(list_t **start, int index)
     previous->next = next;  
 } 
 
-int first(list_t* start){
-	return start->num;
-}
-
-int last(list_t* start){
-	list_t* current = start; 
-    if (current == NULL){
-        return -1;
-    }
-    while(current->next != NULL){
-		current = current->next;
-	}
-    return current->num;
-}
-
 void clear(list_t **start) {
     list_t *ptr = *start;
 
@@ -167,4 +176,41 @@ list_t *createNode(int num){
     newNode->num = num;
     newNode->next = NULL;
     return newNode;
+}
+
+void sortList(list_t **start){
+    
+    list_t *ptr = *start;
+    list_t *sortedList = createNode(ptr->num);
+    list_t *newNode = NULL;
+    
+    ptr = ptr->next;
+
+    while(ptr != NULL){
+        newNode = createNode(ptr->num);
+        insertIntoSort(&sortedList, newNode);
+        ptr = ptr->next;
+    }
+
+    *start = sortedList;
+
+}
+
+void insertIntoSort(list_t **list, list_t *newNode){
+
+    list_t *ptr = *list;
+    list_t *prev = NULL;
+
+    while(ptr != NULL && ptr->num < newNode->num){
+        prev = ptr;
+        ptr = ptr->next;
+    }
+
+    if(prev == NULL){
+        newNode->next = *list;
+        *list = newNode;
+    } else {
+        prev->next = newNode;
+        newNode->next = ptr;
+    }
 }
