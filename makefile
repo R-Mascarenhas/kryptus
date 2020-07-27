@@ -6,13 +6,13 @@ LIB 	= linked
 SOURCES = linked.c \
 		  Prompt.c
 
-CFLAGS 	= -Wall -Wextra -std=c11
+CFLAGS 	= -Wall -std=c11 -g
 
 LFLAGS = -L.
 
 OBJS:=$(SOURCES:.c=.o)
 
-TARGET = program
+TARGET = Prompt
 
 all: build
 
@@ -28,14 +28,13 @@ all: build
 
 build: lib$(LIB).a
 	@echo "\nBUILDING FILES"
-	$(CC) $(CFLAGS) $(LFLAGS) -l$(LIB) -o $(TARGET).out
+	$(CC) $(CFLAGS) $(LFLAGS) -l$(LIB) -o $(TARGET)
 
 run: build
 	@echo "\nRUNNING..."
-	./$(TARGET).out
+	./$(TARGET)
 
 clean:
-	rm -f *.out *.a
-	rm -f *.o
+	rm -f *.out *.a *.o $(TARGET)
 
 	
